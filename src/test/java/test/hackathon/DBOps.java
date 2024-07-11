@@ -106,7 +106,7 @@ public class DBOps {
 		{
 			String jdbcUrl = "jdbc:postgresql://localhost:5433/team4_hackathon";
 			String username = "postgres";
-			String password = "AshwiniDBTesting";
+			String password = "";
 
 			Class.forName("org.postgresql.Driver");
 
