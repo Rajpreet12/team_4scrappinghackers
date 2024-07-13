@@ -1,4 +1,4 @@
-package test.hackathon;
+package com.utilities;
 
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -10,7 +10,9 @@ import org.apache.poi.xssf.usermodel.XSSFCell;
 import org.apache.poi.xssf.usermodel.XSSFSheet;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 
-public class LFVFilterReader {
+import com.recipe.vos.FilterVo;
+
+public class ExcelReader {
 
 	public static FilterVo read(String path,String sheetName) {
 
@@ -20,6 +22,8 @@ public class LFVFilterReader {
 
 		List<String> lstEliminate=new ArrayList<String>();
 		List<String> lstAdd=new ArrayList<String>();
+		List<String> recipeToAvoid=new ArrayList<String>();
+		//List<String> optinalRecipes=new ArrayList<String>();
 
 		try {
 
@@ -39,6 +43,12 @@ public class LFVFilterReader {
 				
 				if(!getCellData(sheet.getRow(rowNum).getCell(1)).toLowerCase().trim().isEmpty())
 					lstAdd.add(getCellData(sheet.getRow(rowNum).getCell(1)).toLowerCase().trim());
+				
+				if(!getCellData(sheet.getRow(rowNum).getCell(3)).toLowerCase().trim().isEmpty())
+					recipeToAvoid.add(getCellData(sheet.getRow(rowNum).getCell(3)).toLowerCase().trim());
+				
+			//	if(!getCellData(sheet.getRow(rowNum).getCell(4)).toLowerCase().trim().isEmpty())
+			//		optinalRecipes.add(getCellData(sheet.getRow(rowNum).getCell(4)).toLowerCase().trim());
 
 			}
 
@@ -53,7 +63,11 @@ public class LFVFilterReader {
 			e.printStackTrace();
 		}
 
-		return new FilterVo(lstEliminate,lstAdd);
+		FilterVo out=new FilterVo(lstEliminate,lstAdd);
+		//out.setOptinalRecipes(optinalRecipes);
+		out.setRecipeToAvoid(recipeToAvoid);
+		
+		return out ;
 	}
 
 

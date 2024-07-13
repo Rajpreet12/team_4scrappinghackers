@@ -1,4 +1,4 @@
-package test.hackathon;
+package com.recipe.vos;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -34,7 +34,11 @@ public class RecipeVo {
 
 		for (String singleTagText : tags) {
 
-			checkForTagOrBC(singleTagText);
+			checkAndSetRecipeCat(singleTagText);
+
+			checkAndSetFoodCat(singleTagText);
+
+			checkAndSetCuisineCat(singleTagText);
 		}
 	}
 
@@ -89,18 +93,12 @@ public class RecipeVo {
 
 		for (String singleTagText : breadcrumbs) {
 
-			checkForTagOrBC(singleTagText);
-		}
+			checkAndSetRecipeCat(singleTagText);
 
-	}
-	private void checkForTagOrBC(String singleTagText) {
+			checkAndSetFoodCat(singleTagText);
 
-		checkAndSetRecipeCat(singleTagText);
-
-		checkAndSetFoodCat(singleTagText);
-
-		if(this.Cuisine_category==null || this.Cuisine_category.isEmpty())
 			checkAndSetCuisineCat(singleTagText);
+		}
 
 	}
 	private void checkAndSetRecipeCat(String singleTagText) {

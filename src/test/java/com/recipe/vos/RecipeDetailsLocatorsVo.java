@@ -1,6 +1,6 @@
-package test.hackathon;
+package com.recipe.vos;
 
-public class RecipeDetailsLocators {
+public class RecipeDetailsLocatorsVo {
 
 	
 	//Recipe Category(Breakfast/lunch/snack/dinner)
@@ -25,7 +25,5 @@ public class RecipeDetailsLocators {
 	public static  String  Nutrient_values_loc="//table[@id='rcpnutrients']//tr";
 	
 	public static  String  Receipe_Name="//div[@id='recipehead']//span[contains(@id,'RecipeName')]";
-
-	
 	
 }
