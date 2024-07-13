@@ -60,12 +60,12 @@ public class DatabaseOperations {
 		}
 
 	}
-	public static void insertRecipe(RecipeVo recipeVo) {
+	public static void insertRecipe(RecipeVo recipeVo,String tableName) {
 
 
 		try {
 			PreparedStatement ps = null;
-			String sql = "INSERT INTO LFV_Elimination("
+			String sql = "INSERT INTO "+tableName+"("
 					+ "	\"Recipe_ID\", \"Recipe_Name\", \"Recipe_Category\", \"Food_Category\", \"Ingredients\", \"Preparation_Time\", "
 					+ " \"Cooking_Time\", \"Tag\", \"No_of_servings\", "
 					+ "\"Cuisine_category\", \"Recipe_Description\", \"Preparation_method\", \"Nutrient_values\", \"Recipe_URL\")\n"

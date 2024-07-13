@@ -45,16 +45,12 @@ public class Hooks {
 		System.out.println("LFV avoid receipe -->"+filterVo.getRecipeToAvoid());
 		//System.out.println("LFV optional -->" +filterVo.getOptinalRecipes());
 
-
 		filterVo.getLstAdd().add("tea");
 		filterVo.getLstAdd().add("coffee");
 		filterVo.getLstAdd().add("herbal drink");
 		filterVo.getLstAdd().add("chai");
 
-		filterVo.getLstEliminate().add("sugar substitute");
-
 		MasterClass.filterVo=filterVo;
-
 
 		MasterClass.alreadySaved=DatabaseOperations.getAlreadyCheckedRecipeIds();
 

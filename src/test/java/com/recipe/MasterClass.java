@@ -23,7 +23,7 @@ public class MasterClass {
 	public static final String URL="https://www.tarladalal.com/RecipeAtoZ.aspx";
 
 	@Test (dataProvider = "data-provider")
-	public void myTest (String currentSearchTerm) {
+	public void myLFVTest (String currentSearchTerm) {
 
 		WebDriver driver = new FirefoxDriver();
 
@@ -90,7 +90,7 @@ public class MasterClass {
 							{
 								System.out.println("Got required recipe/inserted in db !");
 
-								DatabaseOperations.insertRecipe(sinleRecipeOutput);
+								DatabaseOperations.insertRecipe(sinleRecipeOutput,"LFV_Elimination");
 							}
 							else
 							{
