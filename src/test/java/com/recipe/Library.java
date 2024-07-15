@@ -33,13 +33,15 @@ public class Library {
 		sinleRecipeOutput.setRecipe_Description(driver.findElement(By.xpath(RecipeDetailsLocatorsVo.Recipe_Description_loc)).getText());
 		sinleRecipeOutput.setRecipe_URL(driver.getCurrentUrl());
 
+		List<WebElement> alltags= driver.findElements(By.xpath(RecipeDetailsLocatorsVo.Tags_loc));
+
+		sinleRecipeOutput.setTags(alltags.stream().map(webElement -> webElement.getText()).collect(Collectors.toList()));
+
 		List<WebElement> allBCs=driver.findElements(By.xpath("//div[@id='show_breadcrumb']/div//span"));
 
 		sinleRecipeOutput.setBreadcrumbs(allBCs.stream().map(webElement -> webElement.getText()).collect(Collectors.toList()));
 
-		List<WebElement> alltags= driver.findElements(By.xpath(RecipeDetailsLocatorsVo.Tags_loc));
-
-		sinleRecipeOutput.setTags(alltags.stream().map(webElement -> webElement.getText()).collect(Collectors.toList()));
+		System.out.println("Cuisine Category ------>  "+sinleRecipeOutput.getCuisine_category());
 
 		List<WebElement> allSteps= driver.findElements(By.xpath(RecipeDetailsLocatorsVo.Preparation_method_loc));
 		sinleRecipeOutput.setPreparation_method(allSteps.stream().map(webElement -> webElement.getText()).collect(Collectors.toList()));
@@ -75,23 +77,17 @@ public class Library {
 
 	}
 
-
 	public static boolean isIngPresent(List<String> inputRecIngr, List<String> criteriaList) {
 
 		for (String singleIng : inputRecIngr) {
 
 			for (String eleIng : criteriaList) {
 
-				if(singleIng.trim().equalsIgnoreCase(eleIng.trim()))
+				if(singleIng.trim().equalsIgnoreCase(eleIng.trim())||
+						singleIng.trim().equalsIgnoreCase(eleIng.trim()+"s") || singleIng.trim().equalsIgnoreCase(eleIng.trim()+"es") ||
+						Arrays.asList(singleIng.trim().split(" ")).contains(eleIng.toLowerCase().trim()))
 				{
-					System.out.println("[exact match] found  "+eleIng+ "... in "+singleIng );
-					return true;
-				}
-
-
-				if(Arrays.asList(singleIng.trim().split(" ")).contains(eleIng.toLowerCase().trim()))
-				{
-					System.out.println("[split match] found  "+eleIng+ "... in "+singleIng );
+					System.out.println("[match] found  "+eleIng+ "... in "+singleIng );
 					return true;
 				}
 			}

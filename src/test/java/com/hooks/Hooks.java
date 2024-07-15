@@ -1,13 +1,13 @@
 package com.hooks;
 
+import java.util.Arrays;
+import java.util.List;
 import java.util.Properties;
 
 import org.openqa.selenium.WebDriver;
 import org.testng.annotations.AfterTest;
 import org.testng.annotations.BeforeSuite;
-import org.testng.annotations.BeforeTest;
 
-import com.driverfactory.DriverFactory;
 import com.recipe.MasterClass;
 import com.recipe.database.DatabaseOperations;
 import com.recipe.vos.FilterVo;
@@ -16,15 +16,20 @@ import com.utilities.ExcelReader;
 
 public class Hooks {
 
-	private DriverFactory driverfactory;
-	private WebDriver driver;
+	public static ConfigReader configreader;
 
-	private ConfigReader configreader;
 	Properties prop;
+
+	//	WebDriver driver;
+
+	public static List<String> allergies=Arrays.asList("Milk","Soy","Egg","Sesame","Peanuts","Walnut","Almond","Hazelnut","Pecan","Cashew","Pistachio","Shell fish","Seafood");
+
 
 	@BeforeSuite(alwaysRun = true)
 	public void beforeSuiteWork()
 	{
+		System.out.println("Inside beforeSuiteWork.....");
+
 		configreader=new ConfigReader();
 
 		try {
@@ -34,45 +39,110 @@ public class Hooks {
 			e.printStackTrace();
 		}
 
+		//------------------------------------------------------------------------LFV filter----------------------------------------------------------------------
 
 		String file="/Users/ashwini/Desktop/hackathon/IngredientsAndComorbidities-ScrapperHackathon_New.xlsx";
 		String sheet="Final list for LFV Elimination ";
+		String LCHFsheet="Final list for LCHFElimination ";
 
-		FilterVo filterVo= ExcelReader.read(file, sheet);
 
-		System.out.println("LFV eliminate ingr -->"+filterVo.getLstEliminate());
-		System.out.println("LFV add ingr -->" +filterVo.getLstAdd());
-		System.out.println("LFV avoid receipe -->"+filterVo.getRecipeToAvoid());
+		Integer toAddCol=2;
+		Integer avoidTermCol=3;
+
+		FilterVo filterVo_LFV= ExcelReader.read(file, sheet,toAddCol,avoidTermCol);
+
+		System.out.println("LFV Filter.....");
+		System.out.println("LFV eliminate ingr -->"+filterVo_LFV.getLstEliminate());
+		System.out.println("LFV add ingr -->" +filterVo_LFV.getLstAdd());
+		System.out.println("LFV avoid receipe -->"+filterVo_LFV.getRecipeToAvoid());
 		//System.out.println("LFV optional -->" +filterVo.getOptinalRecipes());
 
-		filterVo.getLstAdd().add("tea");
-		filterVo.getLstAdd().add("coffee");
-		filterVo.getLstAdd().add("herbal drink");
-		filterVo.getLstAdd().add("chai");
+		filterVo_LFV.getLstAdd().add("tea");
+		filterVo_LFV.getLstAdd().add("coffee");
+		filterVo_LFV.getLstAdd().add("herbal drink");
+		filterVo_LFV.getLstAdd().add("chai");
 
-		MasterClass.filterVo=filterVo;
+		filterVo_LFV.setFilterName("LFV");
 
-		MasterClass.alreadySaved=DatabaseOperations.getAlreadyCheckedRecipeIds();
+
+		//--------------------------------------------------------------------------LCHFE filter---------------------------------------------------------------------
+
+		toAddCol=null;
+		avoidTermCol=2;
+
+		FilterVo filterVo_LCHFE= ExcelReader.read(file,LCHFsheet,toAddCol,avoidTermCol);
+		System.out.println("LCHFE Filter.....");
+		System.out.println("LCHFE eliminate ingr -->"+filterVo_LCHFE.getLstEliminate());
+		System.out.println("LCHFE add ingr -->" +filterVo_LCHFE.getLstAdd());
+		System.out.println("LCHFE avoid receipe -->"+filterVo_LCHFE.getRecipeToAvoid());
+		filterVo_LCHFE.setFilterName("LCHFE");
+
+
+		//-------------------------------------------------------------decide which filter to apply LFV, or LCHFE or.... ------------------------------------------------------
+
+
+		MasterClass.filterVo=filterVo_LFV;
+
+		//MasterClass.filterVo=filterVo_LCHFE;
+
+		prepareDatabase(MasterClass.filterVo.getFilterName());
+
+		MasterClass.alreadySaved=DatabaseOperations.getAlreadyCheckedRecipeIds(MasterClass.filterVo.getFilterName());
 
 		System.out.println("alreadySaved count "+MasterClass.alreadySaved.size());
+
 	}
 
+	private void prepareDatabase(String filterName) {
 
-	@BeforeTest
-	public void launchBrowser()
-	{
-		//		String targetBrowser=configreader.getBrowser();
-		//		System.out.println("targetBrowser--> "+targetBrowser);
-		//		
-		//		driverfactory=new DriverFactory();
-		//
-		//		driver=driverfactory.init_driver(targetBrowser);	
+
+		String query="CREATE TABLE  IF NOT EXISTS public.<TABLE_NAME>"
+				+ "("
+				+ "  "
+				+ "    \"Recipe_ID\" integer NOT NULL,"
+				+ "    \"Recipe_Name\" text NOT NULL,"
+				+ "    \"Recipe_Category\" text,"
+				+ "    \"Food_Category\" text,"
+				+ "    \"Ingredients\" text,"
+				+ "    \"Preparation_Time\" text,"
+				+ "    \"Cooking_Time\" text,"
+				+ "    \"Tag\" text,"
+				+ "    \"No_of_servings\" text,"
+				+ "    \"Cuisine_category\" text,"
+				+ "    \"Recipe_Description\" text,"
+				+ "    \"Preparation_method\" text,"
+				+ "    \"Nutrient_values\" text,"
+				+ "    \"Recipe_URL\" text,"
+				+ "    PRIMARY KEY (\"Recipe_ID\")"
+				+ ");";
+
+
+		DatabaseOperations.createTable("CREATE TABLE IF NOT EXISTS public.\"AlreadyCheckedRecipes_"+filterName+"\""
+				+ "("
+				+ "    \"Recipe_Id\" integer NOT NULL,"
+				+ "    CONSTRAINT \"AlreadyCheckedRecipes_"+filterName+"_pkey\" PRIMARY KEY (\"Recipe_Id\")"
+				+ ")"
+				+ "");
+
+		DatabaseOperations.createTable(query.replace("<TABLE_NAME>",filterName+"_elimination"));
+
+		if(filterName.equalsIgnoreCase("lfv"))
+			DatabaseOperations.createTable(query.replace("<TABLE_NAME>",filterName+"_to_add"));
+
+
+		for (String singleAllergyTerm : allergies) {
+
+			DatabaseOperations.createTable(query.replace("<TABLE_NAME>", filterName+"_Allergy_"+singleAllergyTerm.replaceAll(" ", "_")));
+		}
 	}
 
+	//	@AfterTest
+	//	public   void quitBrowser()
+	//	{
+	//		System.out.println("Inside quitBrowser.....");
+	//
+	//		driver.quit();
+	//	}
 
-	@AfterTest
-	public void quitBrowser()
-	{
-		driver.quit();
-	}
+
 }

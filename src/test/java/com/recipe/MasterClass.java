@@ -1,21 +1,26 @@
 package com.recipe;
 
 import java.time.Duration;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.firefox.FirefoxDriver;
+import org.openqa.selenium.firefox.FirefoxOptions;
 import org.testng.annotations.DataProvider;
 import org.testng.annotations.Test;
 
+import com.hooks.Hooks;
 import com.recipe.database.DatabaseOperations;
 import com.recipe.vos.FilterVo;
 import com.recipe.vos.RecipeVo;
 
 public class MasterClass {
-
 
 	public static List<Integer> alreadySaved;
 	public static FilterVo filterVo;
@@ -23,104 +28,187 @@ public class MasterClass {
 	public static final String URL="https://www.tarladalal.com/RecipeAtoZ.aspx";
 
 	@Test (dataProvider = "data-provider")
-	public void myLFVTest (String currentSearchTerm) {
+	public void myLFVTest (String currentSearchTerm) 
+	{
+		WebDriver driver=null;
 
-		WebDriver driver = new FirefoxDriver();
-
-		System.out.println("searchTerm : "+currentSearchTerm);
-
-		driver.navigate().to(URL+"?beginswith="+currentSearchTerm+"&pageindex=1");
-
-		List<WebElement> allLinks =driver.findElements(By.xpath("//div[contains(.,'Goto Page:')]//a[@class='respglink']"));
-
-		int lastPageIndex = Integer.parseInt(allLinks.get(allLinks.size()-1).getText());
-
-		System.out.println("lastPageIndex ---> "+lastPageIndex);
-
-		String rcpId;
-		
-		for(int pageNumber=1;pageNumber<=lastPageIndex;pageNumber++)
+		try
 		{
+
+			FirefoxOptions firefoxOptions=new FirefoxOptions();
+			if(!Hooks.configreader.getBrowserMode().isEmpty())
+				firefoxOptions.addArguments(Hooks.configreader.getBrowserMode());
+			driver= new FirefoxDriver(firefoxOptions);
+
+			System.out.println("Launching browser--> searchTerm --> "+currentSearchTerm);
+
+			driver.navigate().to(URL+"?beginswith="+currentSearchTerm+"&pageindex=1");
+
+			List<WebElement> allLinks =driver.findElements(By.xpath("//div[contains(.,'Goto Page:')]//a[@class='respglink']"));
+
+			int lastPageIndex=0;
 			try {
-				driver.manage().timeouts().implicitlyWait(Duration.ofMinutes(2));
+				lastPageIndex = Integer.parseInt(allLinks.get(allLinks.size()-1).getText());
+			} catch (Exception e) {
+				System.out.println("lastPageIndex is available");
+			}
 
-				System.out.println(" ========== Currently Searching -> "+currentSearchTerm +" Page : "+(pageNumber)+" ========== ");
+			System.out.println("searchTerm : "+currentSearchTerm+ ", lastPageIndex ---> "+lastPageIndex);
 
-				driver.navigate().to(URL+"?beginswith="+currentSearchTerm+"&pageindex="+pageNumber);
+			String recipeId;
 
-				List<WebElement> allRecipeCards =driver.findElements(By.xpath("//div[@class='rcc_recipecard']"));
+			for(int pageNumber=1;pageNumber<=lastPageIndex;pageNumber++)
+			{
+				try {
+					driver.manage().timeouts().implicitlyWait(Duration.ofMinutes(2));
 
-				System.out.println("all Recipe cards count : "+allRecipeCards.size());
 
-				int totalRecipes=allRecipeCards.size();
+					driver.navigate().to(URL+"?beginswith="+currentSearchTerm+"&pageindex="+pageNumber);
 
-				for (int cardsCounter=0;cardsCounter<totalRecipes;cardsCounter++) 
-				{
-					allRecipeCards =driver.findElements(By.xpath("//div[@class='rcc_recipecard']"));
+					List<WebElement> allRecipeCards =driver.findElements(By.xpath("//div[@class='rcc_recipecard']"));
 
-					WebElement singleCard =allRecipeCards.get(cardsCounter);
+					System.out.println(" ========== Currently Searching -> "+currentSearchTerm +" Page : "+(pageNumber)+ "Cards Count : "+allRecipeCards.size() +"  ========== ");
 
-					WebElement nameEle=singleCard.findElement(By.xpath("//div[@id='"+singleCard.getAttribute("id")+"']//span[@class='rcc_recipename']"));
-
-					rcpId=singleCard.getAttribute("id").replaceAll("rcp", "").trim();
-
-					if(alreadySaved.contains(Integer.parseInt(rcpId)))
+					for (int cardsCounter=0;cardsCounter<allRecipeCards.size();cardsCounter++) 
 					{
-						System.out.println("Recipe "+rcpId+" Already in db..");
-						continue;
-					}
-					else
-					{
-						DatabaseOperations.insertCheckedRecipeId(Integer.parseInt(rcpId));
-					}
+						allRecipeCards = driver.findElements(By.xpath("//div[@class='rcc_recipecard']"));
 
-					nameEle.click();
+						WebElement singleCard = allRecipeCards.get(cardsCounter);
 
-					System.out.println("\n_________________________Checking Recipe# "+rcpId+"_______________________________");
+						WebElement recipeNameElement=singleCard.findElement(By.xpath("//div[@id='"+singleCard.getAttribute("id")+"']//span[@class='rcc_recipename']"));
 
-					RecipeVo sinleRecipeOutput = Library.getRecipeDetails(driver);
+						recipeId=singleCard.getAttribute("id").replaceAll("rcp", "").trim();
 
-					sinleRecipeOutput.setRecipe_ID(rcpId);
-
-					if(!Library. isIngPresent(sinleRecipeOutput.getPlainIngredientsList(), filterVo.getLstEliminate()))
-					{
-						if(Library.isIngPresent(sinleRecipeOutput.getPlainIngredientsList(), filterVo.getLstAdd()))
+						if(alreadySaved.contains(Integer.parseInt(recipeId)))
 						{
-							if(!Library.isNeedToAvoidThisRecipe(sinleRecipeOutput.getTags(), filterVo.getRecipeToAvoid()))
-							{
-								System.out.println("Got required recipe/inserted in db !");
+							System.out.println("Recipe "+recipeId+" Already in db..");
+							continue;
+						}
+						else
+						{
+							DatabaseOperations.insertCheckedRecipeId(Integer.parseInt(recipeId),filterVo.getFilterName());
+						}
 
-								DatabaseOperations.insertRecipe(sinleRecipeOutput,"LFV_Elimination");
+						//open card, open recipe
+						recipeNameElement.click();
+						
+						System.out.println("\n_________________________Checking Recipe# "+recipeId+"_______________________________");
+
+						RecipeVo sinleRecipeOutput = Library.getRecipeDetails(driver);
+
+						sinleRecipeOutput.setRecipe_ID(recipeId);
+
+						//Step 1 - check if recipe is NOT having eliminated ingredients
+						if(! Library.isIngPresent(sinleRecipeOutput.getPlainIngredientsList(), filterVo.getLstEliminate()))
+						{
+							//Step 2 - check if recipe IS having 'add' ingredients
+							if(Library.isIngPresent(sinleRecipeOutput.getPlainIngredientsList(), filterVo.getLstAdd()))
+							{
+								//Step 3 - check if recipe is NOT having avoiding terms
+								if(! Library.isNeedToAvoidThisRecipe(sinleRecipeOutput.getTags(), filterVo.getRecipeToAvoid()))
+								{
+									System.out.println("Got required recipe/inserting in db !");
+									//Step 4 - insert required recipe in Elimination table
+									DatabaseOperations.insertRecipe(sinleRecipeOutput,filterVo.getFilterName()+"_Elimination");
+
+									//Step 5 -  get list(set) of matching allergic ingredients from recipe ingredients
+									Set<String> matchingAllergicIngredients=getMatchingAllergiIngredients(sinleRecipeOutput.getPlainIngredientsList());
+
+									//Step 6 - 'for each' allergic ingredient found, insert into respective allergy table
+									if(!matchingAllergicIngredients.isEmpty())
+									{
+										System.out.println("Got matching allergic ingredients.."+matchingAllergicIngredients);
+										for (String singleAllergicIngredient : matchingAllergicIngredients) {
+
+											System.out.println("Inserting into "+filterVo.getFilterName()+"_Allergy_"+singleAllergicIngredient.replaceAll(" ", "_"));
+											DatabaseOperations.insertRecipe(sinleRecipeOutput,filterVo.getFilterName()+"_Allergy_"+singleAllergicIngredient.replaceAll(" ", "_"));
+										}
+									}
+									else
+									{
+										System.out.println("this recipe is not having any allergic ingredients !");
+									}
+								}
+								else
+								{
+									System.out.println("[#3 ignore recipe] This recipe is having avoiding terms !");
+								}
 							}
 							else
 							{
-								System.out.println("[#3 ignore recipe] This recipe is having avoiding terms !");
+								System.out.println("[#2 ignore recipe] This recipe is NOT having any required(add) igredients !");
 							}
 						}
 						else
 						{
-							System.out.println("[#2 ignore recipe] This recipe is NOT having any required(add) igredients !");
+
+							if(!filterVo.getTo_Add_If_notFullyVgean().isEmpty())
+							{
+								// Step 7
+								//prepare new elimination criteria ~ regular elimination minus "to add"
+								List<String> toAddEliminationNew= new ArrayList<String>();
+								toAddEliminationNew.addAll(filterVo.getLstEliminate());  //e.g. butter can be there
+								toAddEliminationNew.removeAll(filterVo.getTo_Add_If_notFullyVgean()); // removed e.g. butter
+
+								// recipe is NOT having new elimination criteria
+								if(! Library.isIngPresent(sinleRecipeOutput.getPlainIngredientsList(), toAddEliminationNew))
+								{
+									// recipe is having "to_add" ingredients
+									if( Library.isIngPresent(sinleRecipeOutput.getPlainIngredientsList(), filterVo.getTo_Add_If_notFullyVgean()) &&
+											! Library.isNeedToAvoidThisRecipe(sinleRecipeOutput.getTags(), filterVo.getRecipeToAvoid())	)
+									{
+										// Step 8 - if to_add ingredients present, insert into *_to_add table
+										DatabaseOperations.insertRecipe(sinleRecipeOutput,filterVo.getFilterName()+"_to_add");
+									}
+
+								}
+							}
 						}
-					}
-					else
-					{
-						System.out.println("[#1 ignore recipe] This recipe is having eleminated ingredient !");
+
+						driver.navigate().to(URL+"?beginswith="+currentSearchTerm+"&pageindex="+pageNumber);
 					}
 
+				} catch (Exception e) {
 
-					driver.navigate().to(URL+"?beginswith="+currentSearchTerm+"&pageindex="+pageNumber);
+					e.printStackTrace();
+
+					System.out.println(" ========== Error, skipping that recipe Currently Searching -> "+currentSearchTerm +" Page : "+(pageNumber)+" ========== ");
 				}
-
-			} catch (Exception e) {
-
-				e.printStackTrace();
-
-				System.out.println(" ========== Error, skipping that recipe Currently Searching -> "+currentSearchTerm +" Page : "+(pageNumber)+" ========== ");
 			}
 		}
+		finally
+		{
+			if(driver!=null)
+				driver.quit();
+		}
+
 	}
-	
-	
+
+
+	private  Set<String> getMatchingAllergiIngredients(List<String> plainIngredientsList) {
+
+		Set<String> allergicIngr=new HashSet<String>();
+		for (String plainIngr : plainIngredientsList) {
+
+			for (String algIng :Hooks. allergies) {
+
+
+				if(algIng.trim().equalsIgnoreCase(plainIngr.trim())||
+						(plainIngr.trim()).equalsIgnoreCase(algIng.trim()+"s")||(plainIngr.trim()).equalsIgnoreCase(algIng.trim()+"es")||
+						Arrays.asList(plainIngr.trim().split(" ")).contains(algIng.toLowerCase().trim())||
+						Arrays.asList(plainIngr.trim().split(" ")).contains((algIng+"s").toLowerCase().trim())||
+						Arrays.asList(plainIngr.trim().split(" ")).contains((algIng+"es").toLowerCase().trim()))
+				{
+					allergicIngr.add(algIng);
+				}
+			}
+		}
+
+		return allergicIngr;
+
+	}
+
+
 
 	@DataProvider (name = "data-provider", parallel = true)
 	public Object[][] dpMethod(){
@@ -129,4 +217,7 @@ public class MasterClass {
 
 		return search;
 	}
+
+
+
 }

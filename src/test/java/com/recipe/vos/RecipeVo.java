@@ -19,6 +19,8 @@ public class RecipeVo {
 				+ ", \nNutrient_values=" + Nutrient_values + ", \nRecipe_URL=" + Recipe_URL + "]" + "\nBreadscrums : "+breadcrumbs;
 
 	}
+
+
 	public List<String> getIngredients() {
 		return Ingredients;
 	}
@@ -37,21 +39,24 @@ public class RecipeVo {
 			checkAndSetRecipeCat(singleTagText);
 
 			checkAndSetFoodCat(singleTagText);
-
-			checkAndSetCuisineCat(singleTagText);
 		}
+
+		checkAndSetCuisineCat(tags);
 	}
 
-	private void checkAndSetCuisineCat(String tag) {
+	private void checkAndSetCuisineCat(List<String> tags) {
 
 		if(this.Cuisine_category==null || this.Cuisine_category.isEmpty())
 		{
 			for(String cusineCat : FilterVo.CuisineCategory)
 			{
-				if(tag.toLowerCase().contains(cusineCat.toLowerCase()))
-				{
-					this.Cuisine_category = cusineCat;
-					break;
+				for (String singleTagText : tags) {
+
+					if(singleTagText.toLowerCase().contains(cusineCat.toLowerCase()))
+					{
+						this.Cuisine_category = cusineCat;
+						return;
+					}
 				}
 			}
 		}
@@ -97,8 +102,10 @@ public class RecipeVo {
 
 			checkAndSetFoodCat(singleTagText);
 
-			checkAndSetCuisineCat(singleTagText);
 		}
+		
+		checkAndSetCuisineCat(breadcrumbs);
+
 
 	}
 	private void checkAndSetRecipeCat(String singleTagText) {

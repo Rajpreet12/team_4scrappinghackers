@@ -14,7 +14,7 @@ import com.recipe.vos.FilterVo;
 
 public class ExcelReader {
 
-	public static FilterVo read(String path,String sheetName) {
+	public static FilterVo read(String path,String sheetName, Integer to_add_col_number,Integer to_avoid_col_number) {
 
 		FileInputStream fis;
 		XSSFWorkbook workBook;
@@ -23,6 +23,7 @@ public class ExcelReader {
 		List<String> lstEliminate=new ArrayList<String>();
 		List<String> lstAdd=new ArrayList<String>();
 		List<String> recipeToAvoid=new ArrayList<String>();
+		List<String> To_Add_If_notFullyVgean=new ArrayList<String>();
 		//List<String> optinalRecipes=new ArrayList<String>();
 
 		try {
@@ -40,15 +41,24 @@ public class ExcelReader {
 			{
 				if(!getCellData(sheet.getRow(rowNum).getCell(0)).toLowerCase().trim().isEmpty())
 					lstEliminate.add(getCellData(sheet.getRow(rowNum).getCell(0)).toLowerCase().trim());
-				
+
 				if(!getCellData(sheet.getRow(rowNum).getCell(1)).toLowerCase().trim().isEmpty())
 					lstAdd.add(getCellData(sheet.getRow(rowNum).getCell(1)).toLowerCase().trim());
-				
-				if(!getCellData(sheet.getRow(rowNum).getCell(3)).toLowerCase().trim().isEmpty())
-					recipeToAvoid.add(getCellData(sheet.getRow(rowNum).getCell(3)).toLowerCase().trim());
-				
-			//	if(!getCellData(sheet.getRow(rowNum).getCell(4)).toLowerCase().trim().isEmpty())
-			//		optinalRecipes.add(getCellData(sheet.getRow(rowNum).getCell(4)).toLowerCase().trim());
+
+				if(to_add_col_number!=null)
+				{
+					if(!getCellData(sheet.getRow(rowNum).getCell(to_add_col_number.intValue())).toLowerCase().trim().isEmpty())
+						To_Add_If_notFullyVgean.add(getCellData(sheet.getRow(rowNum).getCell(to_add_col_number.intValue())).toLowerCase().trim());
+				}
+
+				if(to_avoid_col_number!=null)
+				{
+					if(!getCellData(sheet.getRow(rowNum).getCell(to_avoid_col_number.intValue())).toLowerCase().trim().isEmpty())
+						recipeToAvoid.add(getCellData(sheet.getRow(rowNum).getCell(to_avoid_col_number.intValue())).toLowerCase().trim());
+				}
+
+				//	if(!getCellData(sheet.getRow(rowNum).getCell(4)).toLowerCase().trim().isEmpty())
+				//		optinalRecipes.add(getCellData(sheet.getRow(rowNum).getCell(4)).toLowerCase().trim());
 
 			}
 
@@ -66,7 +76,8 @@ public class ExcelReader {
 		FilterVo out=new FilterVo(lstEliminate,lstAdd);
 		//out.setOptinalRecipes(optinalRecipes);
 		out.setRecipeToAvoid(recipeToAvoid);
-		
+		out.setTo_Add_If_notFullyVgean(To_Add_If_notFullyVgean);
+
 		return out ;
 	}
 

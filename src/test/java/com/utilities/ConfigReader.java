@@ -7,6 +7,7 @@ import java.util.Properties;
 public class ConfigReader {
 
 	String browser="";
+	String mode="";
 	public Properties prop;
 	public String proppath= "./src/test/resources/data/config.properties";
 
@@ -33,6 +34,10 @@ public class ConfigReader {
 
 	public  String getBrowser() {
 		return prop.getProperty("browser");
+	}
+	
+	public  String getBrowserMode() {
+		return prop.getProperty("mode");
 	}
 
 }

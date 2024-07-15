@@ -10,13 +10,63 @@ import java.util.List;
 
 import org.apache.commons.lang3.StringUtils;
 
+import com.hooks.Hooks;
 import com.recipe.vos.RecipeVo;
 
 public class DatabaseOperations {
 
 	static Connection connection; 
 
-	public static List<Integer> getAlreadyCheckedRecipeIds() 
+
+	public static void main_(String[] args) {
+		
+		//dropAlltableContent();
+	}
+
+	private static void dropAlltableContent()
+	{
+		String filterName="LCHFE";
+		
+		String query="DROP TABLE IF EXISTS public.<TABLE_NAME>";
+
+		DatabaseOperations.dropTable(query.replace("<TABLE_NAME>","\"AlreadyCheckedRecipes_"+filterName+"\""));
+		DatabaseOperations.dropTable(query.replace("<TABLE_NAME>",filterName+"_elimination"));
+		try {
+			DatabaseOperations.dropTable(query.replace("<TABLE_NAME>",filterName+"_to_add"));
+		} catch (Exception e) {
+		}
+
+		for (String singleAllergyTerm : Hooks.allergies) {
+
+			DatabaseOperations.dropTable(query.replace("<TABLE_NAME>", filterName+"_Allergy_"+singleAllergyTerm.replaceAll(" ", "_")));
+		}
+	}
+
+	public static void dropTable(String query)
+	{
+		try {
+			Statement statement = getConn().createStatement();
+			statement.execute(query);
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+	}
+
+
+	public static void createTable(String query)
+	{
+		try {
+			Statement statement = getConn().createStatement();
+			statement.execute(query);
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+
+
+	}
+	//filter == LFV, LCHFE ...
+	
+	public static List<Integer> getAlreadyCheckedRecipeIds(String filter) 
 	{
 		List<Integer> savedIds=new ArrayList<Integer>();
 		try 
@@ -24,7 +74,7 @@ public class DatabaseOperations {
 			Statement statement = getConn().createStatement();
 
 			ResultSet resultSet = statement.executeQuery("SELECT \"Recipe_Id\" "
-					+ "	FROM public.\"AlreadyCheckedRecipes\";");
+					+ "	FROM public.\"AlreadyCheckedRecipes_"+filter+"\";");
 
 			while (resultSet.next())
 			{
@@ -41,11 +91,11 @@ public class DatabaseOperations {
 	}
 
 
-	public static void insertCheckedRecipeId(int recId) {
+	public static void insertCheckedRecipeId(int recId,String filter) {
 
 		try {
 			PreparedStatement ps = null;
-			String	sql = "INSERT INTO public.\"AlreadyCheckedRecipes\"("
+			String	sql = "INSERT INTO public.\"AlreadyCheckedRecipes_"+filter+"\"("
 					+ "	\"Recipe_Id\")"
 					+ "	VALUES (?);";
 
@@ -55,11 +105,11 @@ public class DatabaseOperations {
 
 			ps.executeUpdate();
 		} catch (Exception e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 
 	}
+
 	public static void insertRecipe(RecipeVo recipeVo,String tableName) {
 
 
@@ -99,12 +149,12 @@ public class DatabaseOperations {
 
 		} catch (Exception e) 
 		{
-			System.out.println("Error while inserting or duplicate !");
+			System.out.println("Error while inserting / duplicate !");
 		}
 	}
 
 
-	private static Connection getConn() throws Exception {
+	public static Connection getConn() throws Exception {
 
 		if(connection==null)
 		{
