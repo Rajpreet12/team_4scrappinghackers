@@ -79,19 +79,37 @@ public class Library {
 
 	public static boolean isIngPresent(List<String> inputRecIngr, List<String> criteriaList) {
 
+		//		for (String singleIng : inputRecIngr) {
+		//
+		//			for (String eleIng : criteriaList) {
+		//
+		//				if(singleIng.trim().equalsIgnoreCase(eleIng.trim())||
+		//						singleIng.trim().equalsIgnoreCase(eleIng.trim()+"s") || singleIng.trim().equalsIgnoreCase(eleIng.trim()+"es") ||
+		//						Arrays.asList(singleIng.trim().split(" ")).contains(eleIng.toLowerCase().trim()))
+		//				{
+		//					System.out.println("[match] found  "+eleIng+ "... in "+singleIng );
+		//					return true;
+		//				}
+		//			}
+		//		}
+
 		for (String singleIng : inputRecIngr) {
 
 			for (String eleIng : criteriaList) {
 
+				//walnut - walnuts
+				//walnuts - walnut
 				if(singleIng.trim().equalsIgnoreCase(eleIng.trim())||
-						singleIng.trim().equalsIgnoreCase(eleIng.trim()+"s") || singleIng.trim().equalsIgnoreCase(eleIng.trim()+"es") ||
-						Arrays.asList(singleIng.trim().split(" ")).contains(eleIng.toLowerCase().trim()))
+						Arrays.asList(singleIng.trim().split(" ")).contains(eleIng.toLowerCase().trim())||
+						Arrays.asList(singleIng.trim().split(" ")).contains((eleIng+"s").toLowerCase().trim())||
+						Arrays.asList(singleIng.trim().split(" ")).contains((eleIng+"es").toLowerCase().trim()))
 				{
 					System.out.println("[match] found  "+eleIng+ "... in "+singleIng );
 					return true;
 				}
 			}
 		}
+
 
 		return false;
 	}
