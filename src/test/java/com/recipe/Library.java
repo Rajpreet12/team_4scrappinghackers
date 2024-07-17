@@ -9,6 +9,7 @@ import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
 
+import com.hooks.Hooks;
 import com.recipe.vos.RecipeDetailsLocatorsVo;
 import com.recipe.vos.RecipeVo;
 
@@ -77,50 +78,64 @@ public class Library {
 
 	}
 
-	public static boolean isIngPresent(List<String> inputRecIngr, List<String> criteriaList) {
-
-		//		for (String singleIng : inputRecIngr) {
-		//
-		//			for (String eleIng : criteriaList) {
-		//
-		//				if(singleIng.trim().equalsIgnoreCase(eleIng.trim())||
-		//						singleIng.trim().equalsIgnoreCase(eleIng.trim()+"s") || singleIng.trim().equalsIgnoreCase(eleIng.trim()+"es") ||
-		//						Arrays.asList(singleIng.trim().split(" ")).contains(eleIng.toLowerCase().trim()))
-		//				{
-		//					System.out.println("[match] found  "+eleIng+ "... in "+singleIng );
-		//					return true;
-		//				}
-		//			}
-		//		}
+	public static boolean isIngPresent(List<String> inputRecIngr, List<String> criteriaList,String forLog) {
 
 		for (String singleIng : inputRecIngr) {
 
 			singleIng=singleIng.toLowerCase();
 			singleIng= singleIng.replaceAll("[^a-zA-Z0-9 ]", " ").replaceAll(" +", " ");  
 
-			
 			for (String eleIng : criteriaList) {
 
-				
+
 				if(singleIng.trim().equalsIgnoreCase(eleIng.trim())||
 						Arrays.asList(singleIng.trim().split(" ")).contains(eleIng.toLowerCase().trim())||
 						Arrays.asList(singleIng.trim().split(" ")).contains((eleIng+"s").toLowerCase().trim())||
 						Arrays.asList(singleIng.trim().split(" ")).contains((eleIng+"es").toLowerCase().trim()))
 				{
-					System.out.println("[match] found  "+eleIng+ "... in "+singleIng );
-					return true;
+
+					String toIgnore= Hooks.ExceptionIngredientMapping.get(eleIng);
+					if(toIgnore!=null)
+					{
+						if(!singleIng.trim().toLowerCase().contains(toIgnore))
+						{
+							System.out.println("[match] found  "+eleIng+ "... in "+singleIng  +" for "+forLog);
+
+							return true;
+						}
+						
+					}
+					else
+					{
+						System.out.println("[match] found  "+eleIng+ "... in "+singleIng  +" for "+forLog);
+						return true;
+					}
 				}
-				
+
 				//olive oil - cri
 				//extra virgin olive oil   = ing
 				if(eleIng.contains(" ") && singleIng.contains(eleIng.toLowerCase()) )
 				{
-					System.out.println("[match] found  "+eleIng+ "... in "+singleIng );
-					return true;
+					System.out.println("[match] found  "+eleIng+ "... in "+singleIng  +" for "+forLog);
+
+
+					String toIgnore= Hooks.ExceptionIngredientMapping.get(eleIng);
+					if(toIgnore!=null)
+					{
+						if(!singleIng.trim().toLowerCase().contains(toIgnore))
+						{
+							System.out.println("[match] found  "+eleIng+ "... in "+singleIng  +" for "+forLog);
+							return true;
+						}
+					}
+					else
+					{
+						System.out.println("[match] found  "+eleIng+ "... in "+singleIng  +" for "+forLog);
+						return true;
+					}
 				}
 			}
 		}
-
 
 		return false;
 	}

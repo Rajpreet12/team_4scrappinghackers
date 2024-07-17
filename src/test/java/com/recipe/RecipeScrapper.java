@@ -98,10 +98,10 @@ public class RecipeScrapper {
 						List<String> filtercompare;
 
 						//Step 1 - check if recipe is NOT having eliminated ingredients
-						if(! Library.isIngPresent(sinleRecipeOutput.getPlainIngredientsList(), filterVo.getLstEliminate()))
+						if(! Library.isIngPresent(sinleRecipeOutput.getPlainIngredientsList(), filterVo.getLstEliminate()," elimination"))
 						{
 							//Step 2 - check if recipe IS having 'add' ingredients
-							if(Library.isIngPresent(sinleRecipeOutput.getPlainIngredientsList(), filterVo.getLstAdd()))
+							if(Library.isIngPresent(sinleRecipeOutput.getPlainIngredientsList(), filterVo.getLstAdd()," add"))
 							{
 
 								if(filterVo.getFilterName().equalsIgnoreCase("LFV"))
@@ -118,7 +118,7 @@ public class RecipeScrapper {
 								{		
 									if(filterVo.getFilterName().equalsIgnoreCase("LFV") || 
 											(filterVo.getFilterName().equalsIgnoreCase("LCHFE")
-													&& Library.isIngPresent(sinleRecipeOutput.getTags(), filterVo.getLstAddfoodprocess())))
+													&& Library.isIngPresent(sinleRecipeOutput.getTags(), filterVo.getLstAddfoodprocess(), " food process")))
 									{
 										//commonFlow===inserts into main elm table, checks and inserts into respective allergy table
 										commonFlow(sinleRecipeOutput);
@@ -151,10 +151,10 @@ public class RecipeScrapper {
 								toAddEliminationNew.removeAll(filterVo.getTo_Add_If_notFullyVgean()); // removed e.g. butter
 
 								// recipe is NOT having new elimination criteria
-								if(! Library.isIngPresent(sinleRecipeOutput.getPlainIngredientsList(), toAddEliminationNew))
+								if(! Library.isIngPresent(sinleRecipeOutput.getPlainIngredientsList(), toAddEliminationNew, " new elimination(toadd)"))
 								{
 									// recipe is having "to_add" ingredients
-									if( Library.isIngPresent(sinleRecipeOutput.getPlainIngredientsList(), filterVo.getTo_Add_If_notFullyVgean()) &&
+									if( Library.isIngPresent(sinleRecipeOutput.getPlainIngredientsList(), filterVo.getTo_Add_If_notFullyVgean()," to-add") &&
 											! Library.isNeedToAvoidThisRecipe(sinleRecipeOutput.getTags(), filterVo.getRecipeToAvoid())	)
 									{
 										// Step 9 - if to_add ingredients present, insert into *_to_add table
@@ -239,7 +239,7 @@ public class RecipeScrapper {
 	@DataProvider (name = "data-provider", parallel = true)
 	public Object[][] dpMethod(){
 
-		String search[][]= {{"J"},{"B"},{"C"},{"D"},{"E"},{"F"},{"G"},{"H"},{"I"},{"J"},{"K"},{"L"},{"M"},{"N"},{"O"},{"P"},{"Q"},{"R"},{"S"},{"T"},{"U"},{"V"},{"W"},{"X"},{"Y"},{"Z"},{"Misc"}};
+		String search[][]= {{"A"},{"B"},{"C"},{"D"},{"E"},{"F"},{"G"},{"H"},{"I"},{"J"},{"K"},{"L"},{"M"},{"N"},{"O"},{"P"},{"Q"},{"R"},{"S"},{"T"},{"U"},{"V"},{"W"},{"X"},{"Y"},{"Z"},{"Misc"}};
 
 		return search;
 	}

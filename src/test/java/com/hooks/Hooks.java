@@ -1,20 +1,25 @@
 package com.hooks;
 
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Properties;
 
-import org.openqa.selenium.WebDriver;
-import org.testng.annotations.AfterTest;
 import org.testng.annotations.BeforeSuite;
 
-import com.recipe.MasterClass;
+import com.recipe.RecipeScrapper;
 import com.recipe.database.DatabaseOperations;
 import com.recipe.vos.FilterVo;
 import com.utilities.ConfigReader;
 import com.utilities.ExcelReader;
 
+import team_4scrappinghackers.LoggerLoad;
+
+
 public class Hooks {
+
+	public static Map<String,String> ExceptionIngredientMapping= new HashMap<String,String>();
 
 	public static ConfigReader configreader;
 
@@ -28,7 +33,7 @@ public class Hooks {
 	@BeforeSuite(alwaysRun = true)
 	public void beforeSuiteWork()
 	{
-		System.out.println("Inside beforeSuiteWork.....");
+		LoggerLoad.info("Inside beforeSuiteWork.....");
 
 		configreader=new ConfigReader();
 
@@ -51,7 +56,7 @@ public class Hooks {
 
 		FilterVo filterVo_LFV= ExcelReader.read(file, sheet,toAddCol,avoidTermCol);
 
-		System.out.println("LFV Filter.....");
+		LoggerLoad.info("LFV Filter.....");
 		System.out.println("LFV eliminate ingr -->"+filterVo_LFV.getLstEliminate());
 		System.out.println("LFV add ingr -->" +filterVo_LFV.getLstAdd());
 		System.out.println("LFV avoid receipe -->"+filterVo_LFV.getRecipeToAvoid());
@@ -80,16 +85,26 @@ public class Hooks {
 
 		//-------------------------------------------------------------decide which filter to apply LFV, or LCHFE or.... ------------------------------------------------------
 
+		//to mention in lowercase
+		ExceptionIngredientMapping.put("pea", "chick pea");
+		ExceptionIngredientMapping.put("potato", "sweet potato");
 
-		MasterClass.filterVo=filterVo_LFV;
 
-		//MasterClass.filterVo=filterVo_LCHFE;
+		RecipeScrapper.filterVo=filterVo_LFV;
 
-		prepareDatabase(MasterClass.filterVo.getFilterName());
+		//	RecipeScrapper.filterVo=filterVo_LCHFE;
 
-		MasterClass.alreadySaved=DatabaseOperations.getAlreadyCheckedRecipeIds(MasterClass.filterVo.getFilterName());
+		String[] foodProcesses = new String[] {"Raw", "Steamed", "Boiled", "Porched", "Sauted", "Airfryed", "Pan fried"};
 
-		System.out.println("alreadySaved count "+MasterClass.alreadySaved.size());
+		filterVo_LCHFE.setLstAddfoodprocess(Arrays.asList(foodProcesses));
+
+		filterVo_LCHFE.getRecipeToAvoid().add("Processed");
+
+		prepareDatabase(RecipeScrapper.filterVo.getFilterName());
+
+		RecipeScrapper.alreadySaved=DatabaseOperations.getAlreadyCheckedRecipeIds(RecipeScrapper.filterVo.getFilterName());
+
+		System.out.println("alreadySaved count "+RecipeScrapper.alreadySaved.size());
 
 	}
 

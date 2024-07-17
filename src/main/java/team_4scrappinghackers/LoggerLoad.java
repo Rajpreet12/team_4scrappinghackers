@@ -1,4 +1,5 @@
-package com.utilities;
+package team_4scrappinghackers;
+
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -40,3 +41,4 @@ public  class LoggerLoad{
 	}	
 
 }
+
