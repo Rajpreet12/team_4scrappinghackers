@@ -92,9 +92,9 @@ public class Hooks {
 		//-------------------------------------------------------------decide which filter to apply LFV, or LCHFE or.... ------------------------------------------------------
 
 
-		MasterClass.filterVo=filterVo_LFV;
+		//MasterClass.filterVo=filterVo_LFV;
 
-		//MasterClass.filterVo=filterVo_LCHFE;
+		MasterClass.filterVo=filterVo_LCHFE;
 
 		prepareDatabase(MasterClass.filterVo.getFilterName());
 
