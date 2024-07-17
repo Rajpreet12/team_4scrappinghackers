@@ -158,9 +158,9 @@ public class DatabaseOperations {
 
 		if(connection==null)
 		{
-			String jdbcUrl = "jdbc:postgresql://localhost:5433/team4_hackathon";
+			String jdbcUrl = "jdbc:postgresql://localhost:5432/team4_scraping_hackers";
 			String username = "postgres";
-			String password = "AshwiniDBTesting";
+			String password = "postgres";
 
 			Class.forName("org.postgresql.Driver");
 

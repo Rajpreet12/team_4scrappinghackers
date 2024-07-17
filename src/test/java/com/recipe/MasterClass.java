@@ -106,7 +106,20 @@ public class MasterClass {
 							{
 								//Step 3 - check if recipe is NOT having avoiding terms
 								if(! Library.isNeedToAvoidThisRecipe(sinleRecipeOutput.getTags(), filterVo.getRecipeToAvoid()))
+									
+									
 								{
+									/*if (filterVo.getFilterName().equalsIgnoreCase("Lfv") || (filterVo.getFilterName()
+									.equalsIgnoreCase("LCHFE"))
+									&& (Library.isIngPresent(sinleRecipeOutput.getPlainIngredientsList(),
+											filterVo.getketorecipeToAvoid())
+											|| (Library.isIngPresent(
+													sinleRecipeOutput.getPlainIngredientsList(),
+													filterVo.getfoodprocessing())))) {*/
+									if(filterVo.getFilterName()=="LFV" || (filterVo.getFilterName()=="LCHFE"
+											&& Library.isIngPresent(sinleRecipeOutput.getTags(), filterVo.getfoodprocessing())))
+									
+								
 									System.out.println("Got required recipe/inserting in db !");
 									//Step 4 - insert required recipe in Elimination table
 									DatabaseOperations.insertRecipe(sinleRecipeOutput,filterVo.getFilterName()+"_Elimination");

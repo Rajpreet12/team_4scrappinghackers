@@ -42,7 +42,7 @@ public class Hooks {
 
 		//------------------------------------------------------------------------LFV filter----------------------------------------------------------------------
 
-		String file="/Users/ashwini/Desktop/hackathon/IngredientsAndComorbidities-ScrapperHackathon_New.xlsx";
+		String file="C:\\Numpyworkspace\\team_4scrappinghackers2\\src\\test\\resources\\IngredientsAndComorbidities-ScrapperHackathon_New.xlsx";
 		String sheet="Final list for LFV Elimination ";
 		String LCHFsheet="Final list for LCHFElimination ";
 
@@ -67,17 +67,27 @@ public class Hooks {
 
 
 		//--------------------------------------------------------------------------LCHFE filter---------------------------------------------------------------------
-
 		toAddCol=null;
 		avoidTermCol=2;
 
 		FilterVo filterVo_LCHFE= ExcelReader.read(file,LCHFsheet,toAddCol,avoidTermCol);
+		
+		String[] foodProcesses = new String[] {"Raw", "Steamed", "Boiled", "Porched", "Sauted", "Airfryed", "Pan fried"};
+		
+		filterVo_LCHFE.setketofoodprocessing(Arrays.asList(foodProcesses));		
+	
+		
+		filterVo_LCHFE.getRecipeToAvoid().add("Processed");
 		System.out.println("LCHFE Filter.....");
 		System.out.println("LCHFE eliminate ingr -->"+filterVo_LCHFE.getLstEliminate());
 		System.out.println("LCHFE add ingr -->" +filterVo_LCHFE.getLstAdd());
 		System.out.println("LCHFE avoid receipe -->"+filterVo_LCHFE.getRecipeToAvoid());
+		System.out.println("LCHFE Addfoodprocess receipe -->"+filterVo_LCHFE.getfoodprocessing());
+		
+		
 		filterVo_LCHFE.setFilterName("LCHFE");
 
+		System.out.println("LCHFE add ingr -->" +filterVo_LCHFE.getLstAdd());
 
 		//-------------------------------------------------------------decide which filter to apply LFV, or LCHFE or.... ------------------------------------------------------
 

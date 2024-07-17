@@ -32,6 +32,8 @@ public class FilterVo {
 	List<String> optinalRecipes;
 	List<String> lstEliminate;
 	List<String> lstAdd;
+	//List<String> ketorecipeToAvoid;
+		List<String> ketofoodprocessing;
 	
 	public List<String> getTo_Add_If_notFullyVgean() {
 		return To_Add_If_notFullyVgean;
@@ -72,4 +74,21 @@ public class FilterVo {
 		this.lstAdd = lstAdd;
 	}
 
+/*
+ * public List<String> getketorecipeToAvoid() { return ketorecipeToAvoid; }
+ * public void setketorecipeToAvoid(List<String> ketorecipeToAvoid) {
+ * this.ketorecipeToAvoid = ketorecipeToAvoid; }
+ */
+
+public List<String> getfoodprocessing() {
+	return ketofoodprocessing;
 }
+
+
+public void setketofoodprocessing(List<String> foodprocessing) {
+	this.ketofoodprocessing = foodprocessing;
+	
+}
+
+}
+
