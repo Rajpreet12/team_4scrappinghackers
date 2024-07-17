@@ -119,7 +119,9 @@ public class MasterClass {
                         		if(! Library.isNeedToAvoidThisRecipe(filtercompare, filterVo.getRecipeToAvoid()))
                         		{																																				                       			
                         			//Step 4- check if recipe is having "food Processing" 
-                        			if(filterVo.getFilterName()=="LFV" || (filterVo.getFilterName()=="LCHFE" && Library.isIngPresent(sinleRecipeOutput.getTags(), filterVo.getLstAddfoodprocess())))
+                        			if(filterVo.getFilterName().equalsIgnoreCase("LFV") || 
+											(filterVo.getFilterName().equalsIgnoreCase("LCHFE")
+													&& Library.isIngPresent(sinleRecipeOutput.getTags(), filterVo.getLstAddfoodprocess())))
                         			{
                         				System.out.println("Got required recipe/inserting in db !");
                         				//Step 5 - insert required recipe in Elimination table
