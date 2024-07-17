@@ -20,7 +20,7 @@ import com.recipe.database.DatabaseOperations;
 import com.recipe.vos.FilterVo;
 import com.recipe.vos.RecipeVo;
 
-public class MasterClass {
+public class RecipeScrapper {
 
 	public static List<Integer> alreadySaved;
 	public static FilterVo filterVo;
@@ -28,13 +28,12 @@ public class MasterClass {
 	public static final String URL="https://www.tarladalal.com/RecipeAtoZ.aspx";
 
 	@Test (dataProvider = "data-provider")
-	public void myLFVTest (String currentSearchTerm) 
+	public void srapRecipes (String currentSearchTerm) 
 	{
 		WebDriver driver=null;
 
 		try
 		{
-
 			FirefoxOptions firefoxOptions=new FirefoxOptions();
 			if(!Hooks.configreader.getBrowserMode().isEmpty())
 				firefoxOptions.addArguments(Hooks.configreader.getBrowserMode());
@@ -61,7 +60,6 @@ public class MasterClass {
 			{
 				try {
 					driver.manage().timeouts().implicitlyWait(Duration.ofMinutes(2));
-
 
 					driver.navigate().to(URL+"?beginswith="+currentSearchTerm+"&pageindex="+pageNumber);
 
@@ -91,12 +89,13 @@ public class MasterClass {
 
 						//open card, open recipe
 						recipeNameElement.click();
-						
+
 						System.out.println("\n_________________________Checking Recipe# "+recipeId+"_______________________________");
 
 						RecipeVo sinleRecipeOutput = Library.getRecipeDetails(driver);
-
 						sinleRecipeOutput.setRecipe_ID(recipeId);
+
+						List<String> filtercompare;
 
 						//Step 1 - check if recipe is NOT having eliminated ingredients
 						if(! Library.isIngPresent(sinleRecipeOutput.getPlainIngredientsList(), filterVo.getLstEliminate()))
@@ -104,31 +103,31 @@ public class MasterClass {
 							//Step 2 - check if recipe IS having 'add' ingredients
 							if(Library.isIngPresent(sinleRecipeOutput.getPlainIngredientsList(), filterVo.getLstAdd()))
 							{
-								//Step 3 - check if recipe is NOT having avoiding terms
-								if(! Library.isNeedToAvoidThisRecipe(sinleRecipeOutput.getTags(), filterVo.getRecipeToAvoid()))
+
+								if(filterVo.getFilterName().equalsIgnoreCase("LFV"))
 								{
-									System.out.println("Got required recipe/inserting in db !");
-									//Step 4 - insert required recipe in Elimination table
-									DatabaseOperations.insertRecipe(sinleRecipeOutput,filterVo.getFilterName()+"_Elimination");
+									filtercompare=sinleRecipeOutput.getTags();	
+								}
+								else
+								{
+									filtercompare=sinleRecipeOutput.getPlainIngredientsList();
+								}
 
-									//Step 5 -  get list(set) of matching allergic ingredients from recipe ingredients
-									Set<String> matchingAllergicIngredients=getMatchingAllergiIngredients(sinleRecipeOutput.getPlainIngredientsList());
-
-									//Step 6 - 'for each' allergic ingredient found, insert into respective allergy table
-									if(!matchingAllergicIngredients.isEmpty())
+								//Step 3 - check if recipe is NOT having avoiding terms
+								if(! Library.isNeedToAvoidThisRecipe(filtercompare, filterVo.getRecipeToAvoid()))
+								{		
+									if(filterVo.getFilterName().equalsIgnoreCase("LFV") || 
+											(filterVo.getFilterName().equalsIgnoreCase("LCHFE")
+													&& Library.isIngPresent(sinleRecipeOutput.getTags(), filterVo.getLstAddfoodprocess())))
 									{
-										System.out.println("Got matching allergic ingredients.."+matchingAllergicIngredients);
-										for (String singleAllergicIngredient : matchingAllergicIngredients) {
-
-											System.out.println("Inserting into "+filterVo.getFilterName()+"_Allergy_"+singleAllergicIngredient.replaceAll(" ", "_"));
-											DatabaseOperations.insertRecipe(sinleRecipeOutput,filterVo.getFilterName()+"_Allergy_"+singleAllergicIngredient.replaceAll(" ", "_"));
-										}
+										//commonFlow===inserts into main elm table, checks and inserts into respective allergy table
+										commonFlow(sinleRecipeOutput);
 									}
 									else
 									{
-										System.out.println("this recipe is not having any allergic ingredients !");
+										System.out.println("[#4 ignore recipe] This recipe is Not having Food processing terms !");	
 									}
-								}
+								}                   
 								else
 								{
 									System.out.println("[#3 ignore recipe] This recipe is having avoiding terms !");
@@ -141,10 +140,11 @@ public class MasterClass {
 						}
 						else
 						{
+							System.out.println("[#1 ignore recipe] This recipe is having eliminated igredients !");
 
 							if(!filterVo.getTo_Add_If_notFullyVgean().isEmpty())
 							{
-								// Step 7
+								// Step 8
 								//prepare new elimination criteria ~ regular elimination minus "to add"
 								List<String> toAddEliminationNew= new ArrayList<String>();
 								toAddEliminationNew.addAll(filterVo.getLstEliminate());  //e.g. butter can be there
@@ -157,7 +157,7 @@ public class MasterClass {
 									if( Library.isIngPresent(sinleRecipeOutput.getPlainIngredientsList(), filterVo.getTo_Add_If_notFullyVgean()) &&
 											! Library.isNeedToAvoidThisRecipe(sinleRecipeOutput.getTags(), filterVo.getRecipeToAvoid())	)
 									{
-										// Step 8 - if to_add ingredients present, insert into *_to_add table
+										// Step 9 - if to_add ingredients present, insert into *_to_add table
 										DatabaseOperations.insertRecipe(sinleRecipeOutput,filterVo.getFilterName()+"_to_add");
 									}
 
@@ -181,6 +181,32 @@ public class MasterClass {
 			if(driver!=null)
 				driver.quit();
 		}
+	}
+
+
+	private void commonFlow(RecipeVo sinleRecipeOutput) {
+
+		System.out.println("Got required recipe/inserting in db !");
+		//Step 5 - insert required recipe in Elimination table
+		DatabaseOperations.insertRecipe(sinleRecipeOutput,filterVo.getFilterName()+"_Elimination");
+
+		//Step 6 -  get list(set) of matching allergic ingredients from recipe ingredients
+		Set<String> matchingAllergicIngredients=getMatchingAllergiIngredients(sinleRecipeOutput.getPlainIngredientsList());
+
+		//Step 7 - 'for each' allergic ingredient found, insert into respective allergy table
+		if(!matchingAllergicIngredients.isEmpty())
+		{
+			System.out.println("Got matching allergic ingredients.."+matchingAllergicIngredients);
+			for (String singleAllergicIngredient : matchingAllergicIngredients) {
+
+				System.out.println("Inserting into "+filterVo.getFilterName()+"_Allergy_"+singleAllergicIngredient.replaceAll(" ", "_"));
+				DatabaseOperations.insertRecipe(sinleRecipeOutput,filterVo.getFilterName()+"_Allergy_"+singleAllergicIngredient.replaceAll(" ", "_"));
+			}
+		}
+		else
+		{
+			System.out.println("this recipe is not having any allergic ingredients !");
+		}	 
 
 	}
 
@@ -213,11 +239,8 @@ public class MasterClass {
 	@DataProvider (name = "data-provider", parallel = true)
 	public Object[][] dpMethod(){
 
-		String search[][]= {{"A"},{"B"},{"C"},{"D"},{"E"},{"F"},{"G"},{"H"},{"I"},{"J"},{"K"},{"L"},{"M"},{"N"},{"O"},{"P"},{"Q"},{"R"},{"S"},{"T"},{"U"},{"V"},{"W"},{"X"},{"Y"},{"Z"},{"Misc"}};
+		String search[][]= {{"J"},{"B"},{"C"},{"D"},{"E"},{"F"},{"G"},{"H"},{"I"},{"J"},{"K"},{"L"},{"M"},{"N"},{"O"},{"P"},{"Q"},{"R"},{"S"},{"T"},{"U"},{"V"},{"W"},{"X"},{"Y"},{"Z"},{"Misc"}};
 
 		return search;
 	}
-
-
-
 }

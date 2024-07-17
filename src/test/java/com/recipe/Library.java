@@ -95,14 +95,25 @@ public class Library {
 
 		for (String singleIng : inputRecIngr) {
 
+			singleIng=singleIng.toLowerCase();
+			singleIng= singleIng.replaceAll("[^a-zA-Z0-9 ]", " ").replaceAll(" +", " ");  
+
+			
 			for (String eleIng : criteriaList) {
 
-				//walnut - walnuts
-				//walnuts - walnut
+				
 				if(singleIng.trim().equalsIgnoreCase(eleIng.trim())||
 						Arrays.asList(singleIng.trim().split(" ")).contains(eleIng.toLowerCase().trim())||
 						Arrays.asList(singleIng.trim().split(" ")).contains((eleIng+"s").toLowerCase().trim())||
 						Arrays.asList(singleIng.trim().split(" ")).contains((eleIng+"es").toLowerCase().trim()))
+				{
+					System.out.println("[match] found  "+eleIng+ "... in "+singleIng );
+					return true;
+				}
+				
+				//olive oil - cri
+				//extra virgin olive oil   = ing
+				if(eleIng.contains(" ") && singleIng.contains(eleIng.toLowerCase()) )
 				{
 					System.out.println("[match] found  "+eleIng+ "... in "+singleIng );
 					return true;

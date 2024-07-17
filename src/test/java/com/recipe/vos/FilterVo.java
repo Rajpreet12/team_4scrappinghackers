@@ -71,5 +71,16 @@ public class FilterVo {
 	public void setLstAdd(List<String> lstAdd) {
 		this.lstAdd = lstAdd;
 	}
+	
+	List<String> lstAddfoodprocess;
+
+
+	public List<String> getLstAddfoodprocess() {
+		return lstAddfoodprocess;
+	}
+	public void setLstAddfoodprocess(List<String> lstAddfoodprocess) {
+		this.lstAddfoodprocess = lstAddfoodprocess;
+	}
+
 
 }

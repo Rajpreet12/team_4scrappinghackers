@@ -14,7 +14,7 @@
   
         <classes>
 			
-            <class name="com.recipe.MasterClass"></class>
+            <class name="com.recipe.RecipeScrapper"></class>
 
         </classes>
  </test>

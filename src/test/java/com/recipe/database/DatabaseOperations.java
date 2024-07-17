@@ -18,14 +18,14 @@ public class DatabaseOperations {
 	static Connection connection; 
 
 
-	public static void main_(String[] args) {
+	public static void main(String[] args) {
 		
-		//dropAlltableContent();
+		dropAlltableContent("LFV");
+		dropAlltableContent("LCHFE");
 	}
 
-	private static void dropAlltableContent()
+	private static void dropAlltableContent(String filterName)
 	{
-		String filterName="LCHFE";
 		
 		String query="DROP TABLE IF EXISTS public.<TABLE_NAME>";
 
