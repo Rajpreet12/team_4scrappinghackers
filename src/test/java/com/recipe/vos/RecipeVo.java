@@ -77,11 +77,12 @@ public class RecipeVo {
 	List<String> PlainIngredientsList;
 
 	public List<String> getPlainIngredientsList() {
-		return PlainIngredientsList;
+		
+		return Ingredients;
+		//return PlainIngredientsList;
 	}
 	public void setPlainIngredientsList(List<String> plainIngredientsList) {
 
-		System.out.println(plainIngredientsList);
 		PlainIngredientsList = plainIngredientsList;
 	}
 	String Preparation_Time;

@@ -6,11 +6,19 @@ import java.util.List;
 public class FilterVo {
 
 	
+	List<Integer> alreadySaved;
+	
 	//LFV, LCHFE..
 	String filterName;
 	
 	public String getFilterName() {
 		return filterName;
+	}
+	public List<Integer> getAlreadySaved() {
+		return alreadySaved;
+	}
+	public void setAlreadySaved(List<Integer> alreadySaved) {
+		this.alreadySaved = alreadySaved;
 	}
 	public void setFilterName(String filterName) {
 		this.filterName = filterName;

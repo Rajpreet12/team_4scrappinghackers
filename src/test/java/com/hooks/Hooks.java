@@ -9,6 +9,7 @@ import java.util.Properties;
 import org.testng.annotations.BeforeSuite;
 
 import com.recipe.RecipeScrapper;
+import com.recipe.RecipeScrapper_DBMode;
 import com.recipe.database.DatabaseOperations;
 import com.recipe.vos.FilterVo;
 import com.utilities.ConfigReader;
@@ -46,11 +47,11 @@ public class Hooks {
 
 		//------------------------------------------------------------------------LFV filter----------------------------------------------------------------------
 
-		String file="/Users/ashwini/Desktop/hackathon/IngredientsAndComorbidities-ScrapperHackathon_New.xlsx";
+		String file="/Users/ashwini/git/team_4scrappinghackers/src/test/resources/data/IngredientsAndComorbidities-ScrapperHackathon_New_Updated.xlsx";
 		String sheet="Final list for LFV Elimination ";
 		String LCHFsheet="Final list for LCHFElimination ";
 
-		
+
 		Integer toAddCol=2;
 		Integer avoidTermCol=3;
 
@@ -69,7 +70,6 @@ public class Hooks {
 
 		filterVo_LFV.setFilterName("LFV");
 
-
 		//--------------------------------------------------------------------------LCHFE filter---------------------------------------------------------------------
 
 		toAddCol=null;
@@ -82,17 +82,14 @@ public class Hooks {
 		System.out.println("LCHFE avoid receipe -->"+filterVo_LCHFE.getRecipeToAvoid());
 		filterVo_LCHFE.setFilterName("LCHFE");
 
-
 		//-------------------------------------------------------------decide which filter to apply LFV, or LCHFE or.... ------------------------------------------------------
 
 		//to mention in Lower case
 		ExceptionIngredientMapping.put("pea", "chick pea");
 		ExceptionIngredientMapping.put("potato", "sweet potato");
 
-				
-		RecipeScrapper.filterVo=filterVo_LFV;
-
-		//	RecipeScrapper.filterVo=filterVo_LCHFE;
+		RecipeScrapper.LFV_FILTER=filterVo_LFV;
+		RecipeScrapper.LCHFE_FILTER=filterVo_LCHFE;
 
 		String[] foodProcesses = new String[] {"Raw", "Steamed", "Boiled", "Porched", "Sauted", "Airfryed", "Pan fried"};
 
@@ -100,11 +97,19 @@ public class Hooks {
 
 		filterVo_LCHFE.getRecipeToAvoid().add("Processed");
 
-		prepareDatabase(RecipeScrapper.filterVo.getFilterName());
+		prepareDatabase(filterVo_LFV.getFilterName());
+		prepareDatabase(filterVo_LCHFE.getFilterName());
 
-		RecipeScrapper.alreadySaved=DatabaseOperations.getAlreadyCheckedRecipeIds(RecipeScrapper.filterVo.getFilterName());
+		filterVo_LFV.setAlreadySaved( DatabaseOperations.getAlreadyCheckedRecipeIds(filterVo_LFV.getFilterName()));
+		filterVo_LCHFE.setAlreadySaved( DatabaseOperations.getAlreadyCheckedRecipeIds(filterVo_LCHFE.getFilterName()));
 
-		System.out.println("alreadySaved count "+RecipeScrapper.alreadySaved.size());
+		new RecipeScrapper_DBMode().srapRecipes(filterVo_LFV);
+		new RecipeScrapper_DBMode().srapRecipes(filterVo_LCHFE);
+
+
+		DatabaseOperations.printRowCounts(filterVo_LFV.getFilterName());
+		DatabaseOperations.printRowCounts(filterVo_LCHFE.getFilterName());
+
 
 	}
 
@@ -139,10 +144,10 @@ public class Hooks {
 				+ ")"
 				+ "");
 
-		DatabaseOperations.createTable(query.replace("<TABLE_NAME>",filterName+"_elimination"));
+		DatabaseOperations.createTable(query.replace("<TABLE_NAME>",DatabaseOperations.tablePrefix+ filterName+"_elimination"));
 
 		if(filterName.equalsIgnoreCase("lfv"))
-			DatabaseOperations.createTable(query.replace("<TABLE_NAME>",filterName+"_to_add"));
+			DatabaseOperations.createTable(query.replace("<TABLE_NAME>",DatabaseOperations.tablePrefix+filterName+"_to_add"));
 
 
 		for (String singleAllergyTerm : allergies) {

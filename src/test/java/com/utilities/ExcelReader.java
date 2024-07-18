@@ -39,21 +39,23 @@ public class ExcelReader {
 
 			for(int rowNum=2;rowNum<rowCount;rowNum++)
 			{
-				if(!getCellData(sheet.getRow(rowNum).getCell(0)).toLowerCase().trim().isEmpty())
+				if(sheet.getRow(rowNum).getCell(0)!=null &&  !getCellData(sheet.getRow(rowNum).getCell(0)).toLowerCase().trim().isEmpty())
 					lstEliminate.add(getCellData(sheet.getRow(rowNum).getCell(0)).toLowerCase().trim());
 
-				if(!getCellData(sheet.getRow(rowNum).getCell(1)).toLowerCase().trim().isEmpty())
+				if(sheet.getRow(rowNum).getCell(1)!=null && !getCellData(sheet.getRow(rowNum).getCell(1)).toLowerCase().trim().isEmpty())
 					lstAdd.add(getCellData(sheet.getRow(rowNum).getCell(1)).toLowerCase().trim());
 
 				if(to_add_col_number!=null)
 				{
-					if(!getCellData(sheet.getRow(rowNum).getCell(to_add_col_number.intValue())).toLowerCase().trim().isEmpty())
+					if(sheet.getRow(rowNum).getCell(to_add_col_number.intValue()) !=null
+							&& !getCellData(sheet.getRow(rowNum).getCell(to_add_col_number.intValue())).toLowerCase().trim().isEmpty())
 						To_Add_If_notFullyVgean.add(getCellData(sheet.getRow(rowNum).getCell(to_add_col_number.intValue())).toLowerCase().trim());
 				}
 
 				if(to_avoid_col_number!=null)
 				{
-					if(!getCellData(sheet.getRow(rowNum).getCell(to_avoid_col_number.intValue())).toLowerCase().trim().isEmpty())
+					if(sheet.getRow(rowNum).getCell(to_avoid_col_number.intValue()) !=null &&
+							!getCellData(sheet.getRow(rowNum).getCell(to_avoid_col_number.intValue())).toLowerCase().trim().isEmpty())
 						recipeToAvoid.add(getCellData(sheet.getRow(rowNum).getCell(to_avoid_col_number.intValue())).toLowerCase().trim());
 				}
 

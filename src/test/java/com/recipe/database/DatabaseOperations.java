@@ -17,22 +17,23 @@ public class DatabaseOperations {
 
 	static Connection connection; 
 
+	public static final String tablePrefix="FinalList_For_";
 
 	public static void main(String[] args) {
-		
+
 		dropAlltableContent("LFV");
 		dropAlltableContent("LCHFE");
 	}
 
 	private static void dropAlltableContent(String filterName)
 	{
-		
+
 		String query="DROP TABLE IF EXISTS public.<TABLE_NAME>";
 
 		DatabaseOperations.dropTable(query.replace("<TABLE_NAME>","\"AlreadyCheckedRecipes_"+filterName+"\""));
-		DatabaseOperations.dropTable(query.replace("<TABLE_NAME>","FinalList_For_"+filterName+"_elimination"));
+		DatabaseOperations.dropTable(query.replace("<TABLE_NAME>",tablePrefix+filterName+"_elimination"));
 		try {
-			DatabaseOperations.dropTable(query.replace("<TABLE_NAME>","FinalList_For_"+filterName+"_to_add"));
+			DatabaseOperations.dropTable(query.replace("<TABLE_NAME>",tablePrefix+filterName+"_to_add"));
 		} catch (Exception e) {
 		}
 
@@ -65,7 +66,7 @@ public class DatabaseOperations {
 
 	}
 	//filter == LFV, LCHFE ...
-	
+
 	public static List<Integer> getAlreadyCheckedRecipeIds(String filter) 
 	{
 		List<Integer> savedIds=new ArrayList<Integer>();
@@ -86,6 +87,8 @@ public class DatabaseOperations {
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
+
+		System.out.println("got already checked recipes count for "+filter+ ": "+savedIds.size());
 		return savedIds;
 
 	}
@@ -110,6 +113,7 @@ public class DatabaseOperations {
 
 	}
 
+	
 	public static void insertRecipe(RecipeVo recipeVo,String tableName) {
 
 
@@ -168,5 +172,51 @@ public class DatabaseOperations {
 		}
 
 		return connection;
+	}
+
+	public static void printRowCounts(String filter) {
+
+		String qry=null;
+
+		System.out.println("\nPrinting row counts for filter "+filter);
+
+		try 
+		{
+			Statement statement = getConn().createStatement();
+
+
+			qry="select count(*) as ct from <TABLE_NAME>";
+			ResultSet resultSet = statement.executeQuery(qry.replace("<TABLE_NAME>", tablePrefix+filter+"_elimination"));
+
+			while (resultSet.next())
+			{
+				System.out.println(tablePrefix+filter+"elimination count : "+resultSet.getInt("ct"));
+			}
+
+			if(filter.equalsIgnoreCase("lfv"))
+			{
+				resultSet = statement.executeQuery(qry.replace("<TABLE_NAME>", tablePrefix+filter+"_to_add"));
+
+				while (resultSet.next())
+				{
+					System.out.println("lfv_to_add count : "+resultSet.getInt("ct"));
+				}
+			}
+
+			for (String singleAllergyTerm : Hooks.allergies) 
+			{
+
+				resultSet = statement.executeQuery(qry.replace("<TABLE_NAME>",  filter+"_Allergy_"+singleAllergyTerm.replaceAll(" ", "_")));
+
+				while (resultSet.next())
+				{
+					System.out.println(filter+"_Allergy_"+singleAllergyTerm.replaceAll(" ", "_")+" count : "+resultSet.getInt("ct"));
+				}
+			}
+
+
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
 	}
 }
