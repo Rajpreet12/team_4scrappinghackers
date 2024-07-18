@@ -103,6 +103,9 @@ public class Hooks {
 		filterVo_LFV.setAlreadySaved( DatabaseOperations.getAlreadyCheckedRecipeIds(filterVo_LFV.getFilterName()));
 		filterVo_LCHFE.setAlreadySaved( DatabaseOperations.getAlreadyCheckedRecipeIds(filterVo_LCHFE.getFilterName()));
 
+		
+		//comment below 2 lines when running from web mode === testng.xml
+		//else leave uncommented and run thr testngDB.xml
 		new RecipeScrapper_DBMode().srapRecipes(filterVo_LFV);
 		new RecipeScrapper_DBMode().srapRecipes(filterVo_LCHFE);
 

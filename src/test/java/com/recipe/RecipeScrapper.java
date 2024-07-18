@@ -1,11 +1,7 @@
 package com.recipe;
 
 import java.time.Duration;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
@@ -22,10 +18,20 @@ import com.recipe.vos.RecipeVo;
 
 public class RecipeScrapper {
 
-	public static List<Integer> alreadySaved;
-	public static FilterVo filterVo;
+
+	public static FilterVo LFV_FILTER;
+	public static FilterVo LCHFE_FILTER;
+
 
 	public static final String URL="https://www.tarladalal.com/RecipeAtoZ.aspx";
+
+	@DataProvider (name = "data-provider", parallel = true)
+	public Object[][] dpMethod(){
+
+		String search[][]= {{"A"},{"B"},{"C"},{"D"},{"E"},{"F"},{"G"},{"H"},{"I"},{"J"},{"K"},{"L"},{"M"},{"N"},{"O"},{"P"},{"Q"},{"R"},{"S"},{"T"},{"U"},{"V"},{"W"},{"X"},{"Y"},{"Z"},{"Misc"}};
+
+		return search;
+	}
 
 	@Test (dataProvider = "data-provider")
 	public void srapRecipes (String currentSearchTerm) 
@@ -36,20 +42,26 @@ public class RecipeScrapper {
 		{
 			FirefoxOptions firefoxOptions=new FirefoxOptions();
 			if(!Hooks.configreader.getBrowserMode().isEmpty())
-				firefoxOptions.addArguments(Hooks.configreader.getBrowserMode());
+			{
+				//firefoxOptions.addArguments(Hooks.configreader.getBrowserMode());
+			}
+
 			driver= new FirefoxDriver(firefoxOptions);
+			driver.manage().timeouts().implicitlyWait(Duration.ofMinutes(2));
 
 			System.out.println("Launching browser--> searchTerm --> "+currentSearchTerm);
 
+			//default page = 1 for any search term
 			driver.navigate().to(URL+"?beginswith="+currentSearchTerm+"&pageindex=1");
 
+			//for each search term get last page number
 			List<WebElement> allLinks =driver.findElements(By.xpath("//div[contains(.,'Goto Page:')]//a[@class='respglink']"));
 
 			int lastPageIndex=0;
 			try {
 				lastPageIndex = Integer.parseInt(allLinks.get(allLinks.size()-1).getText());
 			} catch (Exception e) {
-				System.out.println("lastPageIndex is available");
+				System.out.println("lastPageIndex is Not available");
 			}
 
 			System.out.println("searchTerm : "+currentSearchTerm+ ", lastPageIndex ---> "+lastPageIndex);
@@ -59,13 +71,13 @@ public class RecipeScrapper {
 			for(int pageNumber=1;pageNumber<=lastPageIndex;pageNumber++)
 			{
 				try {
-					driver.manage().timeouts().implicitlyWait(Duration.ofMinutes(2));
 
 					driver.navigate().to(URL+"?beginswith="+currentSearchTerm+"&pageindex="+pageNumber);
+					driver.manage().timeouts().implicitlyWait(Duration.ofMinutes(2));
 
 					List<WebElement> allRecipeCards =driver.findElements(By.xpath("//div[@class='rcc_recipecard']"));
 
-					System.out.println(" ========== Currently Searching -> "+currentSearchTerm +" Page : "+(pageNumber)+ "Cards Count : "+allRecipeCards.size() +"  ========== ");
+					System.out.println(" ========== Currently Searching -> "+currentSearchTerm +" Page : "+(pageNumber)+ " Cards/Recipes Count : "+allRecipeCards.size() +"  ========== ");
 
 					for (int cardsCounter=0;cardsCounter<allRecipeCards.size();cardsCounter++) 
 					{
@@ -73,96 +85,36 @@ public class RecipeScrapper {
 
 						WebElement singleCard = allRecipeCards.get(cardsCounter);
 
+						//first we extract recipe id from current card
 						WebElement recipeNameElement=singleCard.findElement(By.xpath("//div[@id='"+singleCard.getAttribute("id")+"']//span[@class='rcc_recipename']"));
 
 						recipeId=singleCard.getAttribute("id").replaceAll("rcp", "").trim();
-
-						if(alreadySaved.contains(Integer.parseInt(recipeId)))
-						{
-							System.out.println("Recipe "+recipeId+" Already in db..");
-							continue;
-						}
-						else
-						{
-							DatabaseOperations.insertCheckedRecipeId(Integer.parseInt(recipeId),filterVo.getFilterName());
-						}
-
-						//open card, open recipe
-						recipeNameElement.click();
-
 						System.out.println("\n_________________________Checking Recipe# "+recipeId+"_______________________________");
 
+						if(LFV_FILTER.getAlreadySaved().contains(Integer.parseInt(recipeId)) && LCHFE_FILTER.getAlreadySaved().contains(Integer.parseInt(recipeId)))
+						{
+							System.out.println("Recipe "+recipeId+" Already in db for both lfv and lchfe ..");
+							continue;
+						}
+
+						//open card/ open recipe
+						recipeNameElement.click();
 						RecipeVo sinleRecipeOutput = Library.getRecipeDetails(driver);
 						sinleRecipeOutput.setRecipe_ID(recipeId);
 
-						List<String> filtercompare;
+						System.out.println("recipe opened !");
 
-						//Step 1 - check if recipe is NOT having eliminated ingredients
-						if(! Library.isIngPresent(sinleRecipeOutput.getPlainIngredientsList(), filterVo.getLstEliminate()," elimination"))
+						if( !LFV_FILTER.getAlreadySaved().contains(Integer.parseInt(recipeId)) )
 						{
-							//Step 2 - check if recipe IS having 'add' ingredients
-							if(Library.isIngPresent(sinleRecipeOutput.getPlainIngredientsList(), filterVo.getLstAdd()," add"))
-							{
+							Library.coreLogic(sinleRecipeOutput, LFV_FILTER);
+							DatabaseOperations.insertCheckedRecipeId(Integer.parseInt(recipeId),LFV_FILTER.getFilterName());
 
-								if(filterVo.getFilterName().equalsIgnoreCase("LFV"))
-								{
-									filtercompare=sinleRecipeOutput.getTags();	
-								}
-								else
-								{
-									filtercompare=sinleRecipeOutput.getPlainIngredientsList();
-								}
-
-								//Step 3 - check if recipe is NOT having avoiding terms
-								if(! Library.isNeedToAvoidThisRecipe(filtercompare, filterVo.getRecipeToAvoid()))
-								{		
-									if(filterVo.getFilterName().equalsIgnoreCase("LFV") || 
-											(filterVo.getFilterName().equalsIgnoreCase("LCHFE")
-													&& Library.isIngPresent(sinleRecipeOutput.getTags(), filterVo.getLstAddfoodprocess(), " food process")))
-									{
-										//commonFlow===inserts into main elm table, checks and inserts into respective allergy table
-										commonFlow(sinleRecipeOutput);
-									}
-									else
-									{
-										System.out.println("[#4 ignore recipe] This recipe is Not having Food processing terms !");	
-									}
-								}                   
-								else
-								{
-									System.out.println("[#3 ignore recipe] This recipe is having avoiding terms !");
-								}
-							}
-							else
-							{
-								System.out.println("[#2 ignore recipe] This recipe is NOT having any required(add) igredients !");
-							}
 						}
-						else
+
+						if( !LCHFE_FILTER.getAlreadySaved().contains(Integer.parseInt(recipeId)) )
 						{
-							System.out.println("[#1 ignore recipe] This recipe is having eliminated igredients !");
-
-							if(!filterVo.getTo_Add_If_notFullyVgean().isEmpty())
-							{
-								// Step 8
-								//prepare new elimination criteria ~ regular elimination minus "to add"
-								List<String> toAddEliminationNew= new ArrayList<String>();
-								toAddEliminationNew.addAll(filterVo.getLstEliminate());  //e.g. butter can be there
-								toAddEliminationNew.removeAll(filterVo.getTo_Add_If_notFullyVgean()); // removed e.g. butter
-
-								// recipe is NOT having new elimination criteria
-								if(! Library.isIngPresent(sinleRecipeOutput.getPlainIngredientsList(), toAddEliminationNew, " new elimination(toadd)"))
-								{
-									// recipe is having "to_add" ingredients
-									if( Library.isIngPresent(sinleRecipeOutput.getPlainIngredientsList(), filterVo.getTo_Add_If_notFullyVgean()," to-add") &&
-											! Library.isNeedToAvoidThisRecipe(sinleRecipeOutput.getTags(), filterVo.getRecipeToAvoid())	)
-									{
-										// Step 9 - if to_add ingredients present, insert into *_to_add table
-										DatabaseOperations.insertRecipe(sinleRecipeOutput,filterVo.getFilterName()+"_to_add");
-									}
-
-								}
-							}
+							Library.coreLogic(sinleRecipeOutput, LCHFE_FILTER);
+							DatabaseOperations.insertCheckedRecipeId(Integer.parseInt(recipeId),LCHFE_FILTER.getFilterName());
 						}
 
 						driver.navigate().to(URL+"?beginswith="+currentSearchTerm+"&pageindex="+pageNumber);
@@ -184,63 +136,5 @@ public class RecipeScrapper {
 	}
 
 
-	private void commonFlow(RecipeVo sinleRecipeOutput) {
 
-		System.out.println("Got required recipe/inserting in db !");
-		//Step 5 - insert required recipe in Elimination table
-		DatabaseOperations.insertRecipe(sinleRecipeOutput,filterVo.getFilterName()+"_Elimination");
-
-		//Step 6 -  get list(set) of matching allergic ingredients from recipe ingredients
-		Set<String> matchingAllergicIngredients=getMatchingAllergiIngredients(sinleRecipeOutput.getPlainIngredientsList());
-
-		//Step 7 - 'for each' allergic ingredient found, insert into respective allergy table
-		if(!matchingAllergicIngredients.isEmpty())
-		{
-			System.out.println("Got matching allergic ingredients.."+matchingAllergicIngredients);
-			for (String singleAllergicIngredient : matchingAllergicIngredients) {
-
-				System.out.println("Inserting into "+filterVo.getFilterName()+"_Allergy_"+singleAllergicIngredient.replaceAll(" ", "_"));
-				DatabaseOperations.insertRecipe(sinleRecipeOutput,filterVo.getFilterName()+"_Allergy_"+singleAllergicIngredient.replaceAll(" ", "_"));
-			}
-		}
-		else
-		{
-			System.out.println("this recipe is not having any allergic ingredients !");
-		}	 
-
-	}
-
-
-	private  Set<String> getMatchingAllergiIngredients(List<String> plainIngredientsList) {
-
-		Set<String> allergicIngr=new HashSet<String>();
-		for (String plainIngr : plainIngredientsList) {
-
-			for (String algIng :Hooks. allergies) {
-
-
-				if(algIng.trim().equalsIgnoreCase(plainIngr.trim())||
-						(plainIngr.trim()).equalsIgnoreCase(algIng.trim()+"s")||(plainIngr.trim()).equalsIgnoreCase(algIng.trim()+"es")||
-						Arrays.asList(plainIngr.trim().split(" ")).contains(algIng.toLowerCase().trim())||
-						Arrays.asList(plainIngr.trim().split(" ")).contains((algIng+"s").toLowerCase().trim())||
-						Arrays.asList(plainIngr.trim().split(" ")).contains((algIng+"es").toLowerCase().trim()))
-				{
-					allergicIngr.add(algIng);
-				}
-			}
-		}
-
-		return allergicIngr;
-
-	}
-
-
-
-	@DataProvider (name = "data-provider", parallel = true)
-	public Object[][] dpMethod(){
-
-		String search[][]= {{"A"},{"B"},{"C"},{"D"},{"E"},{"F"},{"G"},{"H"},{"I"},{"J"},{"K"},{"L"},{"M"},{"N"},{"O"},{"P"},{"Q"},{"R"},{"S"},{"T"},{"U"},{"V"},{"W"},{"X"},{"Y"},{"Z"},{"Misc"}};
-
-		return search;
-	}
 }
