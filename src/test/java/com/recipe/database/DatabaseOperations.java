@@ -30,9 +30,9 @@ public class DatabaseOperations {
 		String query="DROP TABLE IF EXISTS public.<TABLE_NAME>";
 
 		DatabaseOperations.dropTable(query.replace("<TABLE_NAME>","\"AlreadyCheckedRecipes_"+filterName+"\""));
-		DatabaseOperations.dropTable(query.replace("<TABLE_NAME>",filterName+"_elimination"));
+		DatabaseOperations.dropTable(query.replace("<TABLE_NAME>","FinalList_For_"+filterName+"_elimination"));
 		try {
-			DatabaseOperations.dropTable(query.replace("<TABLE_NAME>",filterName+"_to_add"));
+			DatabaseOperations.dropTable(query.replace("<TABLE_NAME>","FinalList_For_"+filterName+"_to_add"));
 		} catch (Exception e) {
 		}
 

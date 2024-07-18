@@ -50,7 +50,7 @@ public class Hooks {
 		String sheet="Final list for LFV Elimination ";
 		String LCHFsheet="Final list for LCHFElimination ";
 
-
+		
 		Integer toAddCol=2;
 		Integer avoidTermCol=3;
 
@@ -85,11 +85,11 @@ public class Hooks {
 
 		//-------------------------------------------------------------decide which filter to apply LFV, or LCHFE or.... ------------------------------------------------------
 
-		//to mention in lowercase
+		//to mention in Lower case
 		ExceptionIngredientMapping.put("pea", "chick pea");
 		ExceptionIngredientMapping.put("potato", "sweet potato");
 
-
+				
 		RecipeScrapper.filterVo=filterVo_LFV;
 
 		//	RecipeScrapper.filterVo=filterVo_LCHFE;
