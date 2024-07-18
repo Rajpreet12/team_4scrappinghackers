@@ -87,7 +87,8 @@ public class Hooks {
 		//to mention in Lower case
 		ExceptionIngredientMapping.put("pea", "chick pea");
 		ExceptionIngredientMapping.put("potato", "sweet potato");
-
+		//ExceptionIngredientMapping.put("curd", "tofu bean curd soya paneer");
+		ExceptionIngredientMapping.put("mango", "mango powder amchur");
 		RecipeScrapper.LFV_FILTER=filterVo_LFV;
 		RecipeScrapper.LCHFE_FILTER=filterVo_LCHFE;
 

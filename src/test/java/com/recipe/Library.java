@@ -45,17 +45,19 @@ public class Library {
 				//Step 3 - check if recipe is NOT having avoiding terms
 				if(! Library.isNeedToAvoidThisRecipe(filtercompare, filterVo.getRecipeToAvoid()))
 				{		
-					if(filterVo.getFilterName().equalsIgnoreCase("LFV") || 
-							(filterVo.getFilterName().equalsIgnoreCase("LCHFE")
-									&& Library.isIngPresent(sinleRecipeOutput.getTags(), filterVo.getLstAddfoodprocess(), filterVo.getFilterName()+" food process")))
-					{
-						//commonFlow===inserts into main elm table, checks and inserts into respective allergy table
-						commonFlow(sinleRecipeOutput , filterVo);
-					}
-					else
-					{
-						System.out.println("[#4 ignore for "+filterVo.getFilterName()+" recipe] This recipe is Not having Food processing terms !" );	
-					}
+					commonFlow(sinleRecipeOutput , filterVo);
+
+					//					if(filterVo.getFilterName().equalsIgnoreCase("LFV") || 
+					//							(filterVo.getFilterName().equalsIgnoreCase("LCHFE")
+					//									&& Library.isIngPresent(sinleRecipeOutput.getTags(), filterVo.getLstAddfoodprocess(), filterVo.getFilterName()+" food process")))
+					//					{
+					//						//commonFlow===inserts into main elm table, checks and inserts into respective allergy table
+					//						commonFlow(sinleRecipeOutput , filterVo);
+					//					}
+					//					else
+					//					{
+					//						System.out.println("[#4 ignore for "+filterVo.getFilterName()+" recipe] This recipe is Not having Food processing terms !" );	
+					//					}
 				}                   
 				else
 				{
@@ -64,7 +66,15 @@ public class Library {
 			}
 			else
 			{
-				System.out.println("[#2 ignore for"+filterVo.getFilterName()+" recipe] This recipe is NOT having any required(add) igredients !");
+				if(filterVo.getFilterName().equalsIgnoreCase("LCHFE")
+						&& Library.isIngPresent(sinleRecipeOutput.getTags(), filterVo.getLstAddfoodprocess(), filterVo.getFilterName()+" food process"))
+				{
+					commonFlow(sinleRecipeOutput , filterVo);
+				}
+				else
+				{
+					System.out.println("[#2 ignore for"+filterVo.getFilterName()+" recipe] This recipe is NOT having any required(add) igredients !");
+				}
 			}
 		}
 		else
