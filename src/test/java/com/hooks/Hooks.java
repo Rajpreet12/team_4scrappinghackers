@@ -15,7 +15,7 @@ import com.recipe.vos.FilterVo;
 import com.utilities.ConfigReader;
 import com.utilities.ExcelReader;
 
-import team_4scrappinghackers.LoggerLoad;
+import log.LoggerLoad;
 
 
 public class Hooks {
@@ -25,11 +25,9 @@ public class Hooks {
 	public static ConfigReader configreader;
 
 	Properties prop;
-
-	//	WebDriver driver;
-
+	
 	public static List<String> allergies=Arrays.asList("Milk","Soy","Egg","Sesame","Peanuts","Walnut","Almond","Hazelnut","Pecan","Cashew","Pistachio","Shell fish","Seafood");
-
+	//providing allergy list to create its respective table
 
 	@BeforeSuite(alwaysRun = true)
 	public void beforeSuiteWork()
@@ -160,13 +158,6 @@ public class Hooks {
 		}
 	}
 
-	//	@AfterTest
-	//	public   void quitBrowser()
-	//	{
-	//		System.out.println("Inside quitBrowser.....");
-	//
-	//		driver.quit();
-	//	}
-
+	
 
 }

@@ -1,4 +1,4 @@
-package team_4scrappinghackers;
+package log;
 
 
 import org.apache.logging.log4j.LogManager;
