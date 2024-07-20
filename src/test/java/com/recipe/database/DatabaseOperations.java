@@ -18,6 +18,8 @@ public class DatabaseOperations {
 	static Connection connection; 
 
 	public static final String tablePrefix="FinalList_For_";
+	public static final String MasterTableName="MasterTable1";
+
 
 	public static void main(String[] args) {
 

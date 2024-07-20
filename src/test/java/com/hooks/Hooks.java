@@ -137,6 +137,31 @@ public class Hooks {
 				+ "    \"Recipe_URL\" text,"
 				+ "    PRIMARY KEY (\"Recipe_ID\")"
 				+ ");";
+		
+		
+		String mastertableQuery="CREATE TABLE  IF NOT EXISTS public."+DatabaseOperations.MasterTableName
+				+ "("
+				+ "  "
+				+ "    \"Recipe_ID\" integer NOT NULL,"
+				+ "    \"Recipe_Name\" text NOT NULL,"
+				+ "    \"Recipe_Category\" text,"
+				+ "    \"Food_Category\" text,"
+				+ "    \"Ingredients\" text,"
+				+ "    \"Preparation_Time\" text,"
+				+ "    \"Cooking_Time\" text,"
+				+ "    \"Tag\" text,"
+				+ "    \"No_of_servings\" text,"
+				+ "    \"Cuisine_category\" text,"
+				+ "    \"Recipe_Description\" text,"
+				+ "    \"Preparation_method\" text,"
+				+ "    \"Nutrient_values\" text,"
+				+ "    \"Recipe_URL\" text,"
+				+ "    \"PlainIngrList\" text,"
+				+ "    PRIMARY KEY (\"Recipe_ID\")"
+				+ ");";
+		
+		
+		DatabaseOperations.createTable(mastertableQuery);
 
 
 		DatabaseOperations.createTable("CREATE TABLE IF NOT EXISTS public.\"AlreadyCheckedRecipes_"+filterName+"\""

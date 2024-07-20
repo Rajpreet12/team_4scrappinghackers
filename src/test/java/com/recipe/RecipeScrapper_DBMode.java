@@ -23,7 +23,7 @@ public class RecipeScrapper_DBMode {
 
 			Statement statement =conn.createStatement();
 
-			ResultSet resultSet = statement.executeQuery("SELECT *	FROM public.MasterTable;");
+			ResultSet resultSet = statement.executeQuery("SELECT *	FROM public."+DatabaseOperations.MasterTableName+";");
 
 			while (resultSet.next())
 			{
