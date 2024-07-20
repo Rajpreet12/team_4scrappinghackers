@@ -104,7 +104,7 @@ public class MasterClass_DBSave {
 				}
 			} catch (Exception e) {
 
-				e.printStackTrace();
+				System.out.println("Error. This can be ignored.");
 				
 
 			}
